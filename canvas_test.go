@@ -46,6 +46,36 @@ func TestGroupedNodes(t *testing.T) {
 	assert.ElementsMatch(t, contained, c.NodeGroup(groupNode))
 }
 
+func TestChildNodes(t *testing.T) {
+	text1, text2, text3, text4 := NewTextNode("Text 1"), NewTextNode("Text 2"), NewTextNode("Text 3"), NewTextNode("Text 4")
+	edges := []Edge{
+		NewEdge(text1.ToNode(), text2.ToNode(), "right", "left"),
+		NewEdge(text1.ToNode(), text3.ToNode(), "right", "left"),
+		NewEdge(text3.ToNode(), text4.ToNode(), "right", "left"),
+	}
+	nodes := []TypedNode{text1, text2, text3, text4}
+
+	c := NewCanvas(WithNodes(nodes...), WithEdges(edges...))
+
+	assert.ElementsMatch(t, []TypedNode{text2, text3}, c.ChildNodes(text1.BaseNode))
+	assert.ElementsMatch(t, []TypedNode{text4}, c.ChildNodes(text3.BaseNode))
+}
+
+func TestParentNodes(t *testing.T) {
+	text1, text2, text3, text4 := NewTextNode("Text 1"), NewTextNode("Text 2"), NewTextNode("Text 3"), NewTextNode("Text 4")
+	edges := []Edge{
+		NewEdge(text1.ToNode(), text3.ToNode(), "right", "left"),
+		NewEdge(text2.ToNode(), text3.ToNode(), "right", "left"),
+		NewEdge(text3.ToNode(), text4.ToNode(), "right", "left"),
+	}
+	nodes := []TypedNode{text1, text2, text3, text4}
+
+	c := NewCanvas(WithNodes(nodes...), WithEdges(edges...))
+
+	assert.ElementsMatch(t, []TypedNode{text1, text2}, c.ParentNodes(text3.BaseNode))
+	assert.ElementsMatch(t, []TypedNode{text3}, c.ParentNodes(text4.BaseNode))
+}
+
 func shuffle[T any](slice []T) {
 	rand.Shuffle(len(slice), func(i, j int) { slice[i], slice[j] = slice[j], slice[i] })
 }

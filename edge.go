@@ -37,7 +37,7 @@ func (e *Edge) Validate() error {
 	return nil
 }
 
-func NewEdge(from, to *Node, fromSide, toSide string) *Edge {
+func NewEdge(from, to Node, fromSide, toSide string) Edge {
 	e := Edge{
 		ID:       util.NewID(),
 		FromNode: from.ID,
@@ -45,5 +45,5 @@ func NewEdge(from, to *Node, fromSide, toSide string) *Edge {
 		ToNode:   to.ID,
 		ToSide:   &toSide,
 	}
-	return &e
+	return e
 }

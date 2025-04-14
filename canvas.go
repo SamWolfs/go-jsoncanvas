@@ -90,6 +90,57 @@ func (c *Canvas) NodeGroup(n GroupNode) []TypedNode {
 	return nodes
 }
 
+func (c *Canvas) ChildNodes(n BaseNode) []TypedNode {
+	var nodes []TypedNode
+
+	fromEdges, _ := c.nodeEdges(n)
+
+	for _, edge := range fromEdges {
+		nodes = append(nodes, c.GetNodeById(edge.ToNode))
+	}
+
+	return nodes
+}
+
+func (c *Canvas) ParentNodes(n BaseNode) []TypedNode {
+	var nodes []TypedNode
+
+	_, toEdges := c.nodeEdges(n)
+
+	for _, edge := range toEdges {
+		nodes = append(nodes, c.GetNodeById(edge.FromNode))
+	}
+
+	return nodes
+}
+
+func (c *Canvas) nodeEdges(n BaseNode) ([]Edge, []Edge) {
+	var fromEdges []Edge
+	var toEdges []Edge
+
+	for _, edge := range c.Edges {
+		if edge.FromNode == n.ID {
+			fromEdges = append(fromEdges, edge)
+		}
+
+		if edge.ToNode == n.ID {
+			toEdges = append(toEdges, edge)
+		}
+	}
+
+	return fromEdges, toEdges
+}
+
+func (c *Canvas) GetNodeById(id string) TypedNode {
+	var node TypedNode
+	for _, n := range c.Nodes {
+		if n.ToNode().ID == id {
+			node = n
+		}
+	}
+	return node
+}
+
 func (c *Canvas) Validate() error {
 	if c == nil {
 		return nil
