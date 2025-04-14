@@ -76,6 +76,27 @@ func TestParentNodes(t *testing.T) {
 	assert.ElementsMatch(t, []TypedNode{text3}, c.ParentNodes(text4.BaseNode))
 }
 
+func TestGetNodesByTag(t *testing.T) {
+	expected := []TypedNode{
+		NewTextNode("#tag"),
+		NewTextNode("some text and a #tag"),
+		NewTextNode("some text and a #tag and more"),
+		NewTextNode("some text and a\n#tag\n"),
+	}
+	rest := []TypedNode{
+		NewTextNode("random text and nothing more"),
+		NewTextNode("#differenttag"),
+		NewTextNode("#tagandmore"),
+		NewTextNode("random text with #atag"),
+	}
+
+	nodes := slices.Concat(expected, rest)
+
+	c := NewCanvas(WithNodes(nodes...))
+
+	assert.ElementsMatch(t, expected, c.GetNodesByTag("tag"))
+}
+
 func shuffle[T any](slice []T) {
 	rand.Shuffle(len(slice), func(i, j int) { slice[i], slice[j] = slice[j], slice[i] })
 }
