@@ -10,12 +10,12 @@ import (
 type DecoderOption func(*json.Decoder)
 
 type jsonCanvas struct {
-	Nodes []*Node `json:"nodes"`
-	Edges []*Edge `json:"edges"`
+	Nodes []Node `json:"nodes"`
+	Edges []Edge `json:"edges"`
 }
 
 func (c jsonCanvas) toCanvas() (*Canvas, error) {
-	var typedNodes []*TypedNode
+	var typedNodes []TypedNode
 	var nodeErrors []error
 
 	for _, n := range c.Nodes {
@@ -23,7 +23,7 @@ func (c jsonCanvas) toCanvas() (*Canvas, error) {
 		if err != nil {
 			nodeErrors = append(nodeErrors, err)
 		}
-		typedNodes = append(typedNodes, &typedNode)
+		typedNodes = append(typedNodes, typedNode)
 	}
 
 	if len(nodeErrors) > 0 {

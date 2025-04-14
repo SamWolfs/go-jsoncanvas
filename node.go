@@ -184,7 +184,6 @@ func (n *Node) ToTypedNode() (TypedNode, error) {
 	}
 }
 
-// TODO: Change to Typed Nodes
 type BaseNodeOpt func(*BaseNode)
 
 func Position(x, y int) BaseNodeOpt {
