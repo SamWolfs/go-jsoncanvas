@@ -69,9 +69,9 @@ func (c *Canvas) TextNodes() []TextNode {
 func filterNodes[T TypedNode](c *Canvas) []T {
 	var nodes []T
 	for _, node := range c.Nodes {
-		switch node.(type) {
+		switch node := node.(type) {
 		case T:
-			nodes = append(nodes, node.(T))
+			nodes = append(nodes, node)
 		}
 	}
 	return nodes
