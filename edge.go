@@ -25,6 +25,7 @@ func (e *Edge) Validate() error {
 		return nil
 	}
 
+	// TODO: missing validations?
 	if e.FromNode == "" || e.ToNode == "" {
 		return fmt.Errorf("fromNode and toNode are required")
 	} else if e.FromNode == e.ToNode {
