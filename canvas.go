@@ -77,6 +77,19 @@ func filterNodes[T TypedNode](c *Canvas) []T {
 	return nodes
 }
 
+func (c *Canvas) NodeGroup(n GroupNode) []TypedNode {
+	var nodes []TypedNode
+	for _, node := range c.Nodes {
+		if node.ToNode().ID == n.ID {
+			continue
+		}
+		if n.Contains(node.ToNode().BaseNode) {
+			nodes = append(nodes, node)
+		}
+	}
+	return nodes
+}
+
 func (c *Canvas) Validate() error {
 	if c == nil {
 		return nil
