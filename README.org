@@ -1,0 +1,5 @@
+#+title: go-jsoncanvas
+
+~go-jsoncanvas~ is an implementation of the [JSONCanvas](https://jsoncanvas.org/) Spec in Go.
+
+The library is based off of supersonicpineapple/go-jsoncanvas and adds several utility functions for reading Canvas data.
