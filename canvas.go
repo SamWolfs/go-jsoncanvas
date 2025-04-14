@@ -8,26 +8,73 @@ import (
 )
 
 type Canvas struct {
-	Nodes []*TypedNode
-	Edges []*Edge
+	Nodes []TypedNode
+	Edges []Edge
 }
 
-func NewCanvas() *Canvas {
-	return &Canvas{}
+type CanvasOpt func(*Canvas)
+
+func WithNodes(nodes ...TypedNode) CanvasOpt {
+	return func(c *Canvas) {
+		c.AddNodes(nodes...)
+	}
+}
+
+func WithEdges(edges ...Edge) CanvasOpt {
+	return func(c *Canvas) {
+		c.AddEdges(edges...)
+	}
+}
+
+func NewCanvas(opts ...CanvasOpt) *Canvas {
+	c := &Canvas{}
+
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	return c
 }
 
 func (c *Canvas) toJsonCanvas() *jsonCanvas {
-	var nodes []*Node
+	var nodes []Node
 
 	for _, n := range c.Nodes {
-		node := (*n).ToNode()
-		nodes = append(nodes, &node)
+		node := n.ToNode()
+		nodes = append(nodes, node)
 	}
 
 	return &jsonCanvas{
 		Nodes: nodes,
 		Edges: c.Edges,
 	}
+}
+
+func (c *Canvas) FileNodes() []FileNode {
+	return filterNodes[FileNode](c)
+}
+
+func (c *Canvas) GroupNodes() []GroupNode {
+	return filterNodes[GroupNode](c)
+}
+
+func (c *Canvas) LinkNodes() []LinkNode {
+	return filterNodes[LinkNode](c)
+}
+
+func (c *Canvas) TextNodes() []TextNode {
+	return filterNodes[TextNode](c)
+}
+
+func filterNodes[T TypedNode](c *Canvas) []T {
+	var nodes []T
+	for _, node := range c.Nodes {
+		switch node.(type) {
+		case T:
+			nodes = append(nodes, node.(T))
+		}
+	}
+	return nodes
 }
 
 func (c *Canvas) Validate() error {
@@ -38,7 +85,7 @@ func (c *Canvas) Validate() error {
 	var nodeErrors, edgeErrors []error
 
 	for _, node := range c.Nodes {
-		if err := (*node).Validate(); err != nil {
+		if err := node.Validate(); err != nil {
 			nodeErrors = append(nodeErrors, err)
 		}
 	}
@@ -66,12 +113,12 @@ func joinErrors(errors []error) string {
 	return sb.String()
 }
 
-func (c *Canvas) AddNodes(nodes ...*TypedNode) *Canvas {
+func (c *Canvas) AddNodes(nodes ...TypedNode) *Canvas {
 	c.Nodes = append(c.Nodes, nodes...)
 	return c
 }
 
-func (c *Canvas) AddEdges(edges ...*Edge) *Canvas {
+func (c *Canvas) AddEdges(edges ...Edge) *Canvas {
 	c.Edges = append(c.Edges, edges...)
 	return c
 }
