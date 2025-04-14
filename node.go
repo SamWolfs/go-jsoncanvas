@@ -17,6 +17,10 @@ type TypedNode interface {
 	Validate() error
 }
 
+type Container interface {
+	Contains(Container) bool
+}
+
 type BaseNode struct {
 	ID     string  `json:"id"`
 	Type   string  `json:"type"` // one of "text", "file", "link", "group"
@@ -25,6 +29,13 @@ type BaseNode struct {
 	Width  int     `json:"width"`
 	Height int     `json:"height"`
 	Color  *string `json:"color,omitempty"`
+}
+
+func (b BaseNode) Contains(n BaseNode) bool {
+	bdx, bdy := b.X + b.Width, b.Y + b.Height
+	ndx, ndy := n.X + n.Width, n.Y + n.Height
+
+	return n.X >= b.X && n.Y >= b.Y && ndx <= bdx && ndy <= bdy
 }
 
 type Node struct {

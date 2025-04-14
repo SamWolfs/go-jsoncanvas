@@ -176,6 +176,20 @@ func TestBaseNodeOpts(t *testing.T) {
 	assert.Equal(t, node.Height, 20)
 }
 
+func TestContains(t *testing.T) {
+	node1 := newBaseNode("text", Position(0, 0), Width(100), Height(100))
+	node2 := newBaseNode("text", Position(10, 10), Width(50), Height(50))
+	node3 := newBaseNode("text", Position(-10, 10), Width(50), Height(50))
+	node4 := newBaseNode("text", Position(10, 10), Width(150), Height(50))
+	node5 := newBaseNode("text", Position(110, 10), Width(50), Height(50))
+
+	assert.True(t, node1.Contains(node1))
+	assert.True(t, node1.Contains(node2))
+	assert.False(t, node1.Contains(node3))
+	assert.False(t, node1.Contains(node4))
+	assert.False(t, node1.Contains(node5))
+}
+
 func testBaseNode(t string) BaseNode {
 	return BaseNode{
 		ID:     t,
