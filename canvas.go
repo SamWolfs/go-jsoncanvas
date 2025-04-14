@@ -4,6 +4,7 @@ package jsoncanvas
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -139,6 +140,17 @@ func (c *Canvas) GetNodeById(id string) TypedNode {
 		}
 	}
 	return node
+}
+
+func (c *Canvas) GetNodesByTag(tag string) []TextNode {
+	var nodes []TextNode
+	r := regexp.MustCompile("(^|\\s)#" + regexp.QuoteMeta(tag) + "(\\s|$)")
+	for _, n := range c.TextNodes() {
+		if r.MatchString(*n.Text) {
+			nodes = append(nodes, n)
+		}
+	}
+	return nodes
 }
 
 func (c *Canvas) Validate() error {
