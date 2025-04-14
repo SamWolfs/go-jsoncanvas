@@ -7,10 +7,6 @@ import (
 	"os"
 )
 
-var (
-	disallowUnknownFields = true
-)
-
 type DecoderOption func(*json.Decoder)
 
 type jsonCanvas struct {
@@ -18,21 +14,26 @@ type jsonCanvas struct {
 	Edges []*Edge `json:"edges"`
 }
 
-func (c jsonCanvas) toCanvas() *Canvas {
+func (c jsonCanvas) toCanvas() (*Canvas, error) {
 	var typedNodes []*TypedNode
+	var nodeErrors []error
 
 	for _, n := range c.Nodes {
 		typedNode, err := n.ToTypedNode()
 		if err != nil {
-			fmt.Errorf("%s", err)
+			nodeErrors = append(nodeErrors, err)
 		}
 		typedNodes = append(typedNodes, &typedNode)
+	}
+
+	if len(nodeErrors) > 0 {
+		return nil, fmt.Errorf("validation errors:\n%s", joinErrors(nodeErrors))
 	}
 
 	return &Canvas{
 		Nodes: typedNodes,
 		Edges: c.Edges,
-	}
+	}, nil
 }
 
 func DisallowUnknownFields() DecoderOption {
@@ -52,7 +53,7 @@ func Decode(r io.Reader, opts ...DecoderOption) (*Canvas, error) {
 		return nil, fmt.Errorf("can't decode canvas file: %w", err)
 	}
 
-	return c.toCanvas(), nil
+	return c.toCanvas()
 }
 
 func DecodeFile(path string) (*Canvas, error) {
@@ -60,7 +61,11 @@ func DecodeFile(path string) (*Canvas, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't open file: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Println("Error when closing file:", err)
+		}
+	}()
 
 	return Decode(f)
 }
@@ -84,11 +89,15 @@ func EncodeFile(c *Canvas, path string) error {
 		return fmt.Errorf("got dir %s, please specify a file instead", path)
 	}
 
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC|os.O_SYNC, 644)
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC|os.O_SYNC, 0644)
 	if err != nil {
 		return fmt.Errorf("can't open file %s: %w", path, err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Println("Error when closing file:", err)
+		}
+	}()
 
 	return Encode(c, f)
 }

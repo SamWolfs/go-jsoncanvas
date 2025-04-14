@@ -70,6 +70,9 @@ func (n TextNode) ToNode() Node {
 }
 
 func (n TextNode) Validate() error {
+	if n.Text == nil {
+		return fmt.Errorf("text type node requires text attribute")
+	}
 	return nil
 }
 
@@ -82,6 +85,9 @@ func (n FileNode) ToNode() Node {
 }
 
 func (n FileNode) Validate() error {
+	if n.File == nil || *n.File == "" {
+		return fmt.Errorf("file type node requires file attribute")
+	}
 	return nil
 }
 
@@ -93,6 +99,9 @@ func (n LinkNode) ToNode() Node {
 }
 
 func (n LinkNode) Validate() error {
+	if n.URL == nil || *n.URL == "" {
+		return fmt.Errorf("link type node requires url attribute")
+	}
 	return nil
 }
 
@@ -106,6 +115,9 @@ func (n GroupNode) ToNode() Node {
 }
 
 func (n GroupNode) Validate() error {
+	if n.Label == nil {
+		return fmt.Errorf("group type node requires label attribute")
+	}
 	if n.BackgroundStyle != nil && *n.BackgroundStyle != "cover" && *n.BackgroundStyle != "ratio" && *n.BackgroundStyle != "repeat" {
 		return fmt.Errorf("invalid background style: %s", *n.BackgroundStyle)
 	}
@@ -115,18 +127,23 @@ func (n GroupNode) Validate() error {
 func (n *Node) ToTypedNode() (TypedNode, error) {
 	switch n.Type {
 	case "text":
-		return TextNode{BaseNode: n.BaseNode, Text: n.Text}, nil
+		node := TextNode{BaseNode: n.BaseNode, Text: n.Text}
+		return node, node.Validate()
 	case "file":
-		return FileNode{BaseNode: n.BaseNode, File: n.File, Subpath: n.Subpath}, nil
+		node := FileNode{BaseNode: n.BaseNode, File: n.File, Subpath: n.Subpath}
+		return node, node.Validate()
 	case "link":
-		return LinkNode{BaseNode: n.BaseNode, URL: n.URL}, nil
+		node := LinkNode{BaseNode: n.BaseNode, URL: n.URL}
+		return node, node.Validate()
 	case "group":
-		return GroupNode{BaseNode: n.BaseNode, Label: n.Label, Background: n.Background, BackgroundStyle: n.BackgroundStyle}, nil
+		node := GroupNode{BaseNode: n.BaseNode, Label: n.Label, Background: n.Background, BackgroundStyle: n.BackgroundStyle}
+		return node, node.Validate()
 	default:
 		return nil, fmt.Errorf("invalid type: %s", n.Type)
 	}
 }
 
+// TODO: Change to Typed Nodes
 func NewNode() *Node {
 	n := Node{
 		BaseNode: BaseNode{
