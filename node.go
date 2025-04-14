@@ -39,27 +39,18 @@ type Node struct {
 	BackgroundStyle *string `json:"backgroundStyle,omitempty"`
 }
 
+// --------------------------------- TEXT NODE ---------------------------------
 type TextNode struct {
 	BaseNode
 	Text *string
 }
 
-type FileNode struct {
-	BaseNode
-	File    *string
-	Subpath *string
-}
-
-type LinkNode struct {
-	BaseNode
-	URL *string
-}
-
-type GroupNode struct {
-	BaseNode
-	Label           *string
-	Background      *string
-	BackgroundStyle *string // one of "cover", "ratio", "repeat"
+func NewTextNode(text string, baseOpts ...BaseNodeOpt) TextNode {
+	baseNode := newBaseNode("text", baseOpts...)
+	return TextNode{
+		BaseNode: baseNode,
+		Text:     &text,
+	}
 }
 
 func (n TextNode) ToNode() Node {
@@ -74,6 +65,22 @@ func (n TextNode) Validate() error {
 		return fmt.Errorf("text type node requires text attribute")
 	}
 	return nil
+}
+
+// --------------------------------- FILE NODE ---------------------------------
+type FileNode struct {
+	BaseNode
+	File    *string
+	Subpath *string
+}
+
+func NewFileNode(file string, subpath *string, baseOpts ...BaseNodeOpt) FileNode {
+	baseNode := newBaseNode("text", baseOpts...)
+	return FileNode{
+		BaseNode: baseNode,
+		File:     &file,
+		Subpath:  subpath,
+	}
 }
 
 func (n FileNode) ToNode() Node {
@@ -91,6 +98,20 @@ func (n FileNode) Validate() error {
 	return nil
 }
 
+// --------------------------------- LINK NODE ---------------------------------
+type LinkNode struct {
+	BaseNode
+	URL *string
+}
+
+func NewLinkNode(url string, baseOpts ...BaseNodeOpt) LinkNode {
+	baseNode := newBaseNode("text", baseOpts...)
+	return LinkNode{
+		BaseNode: baseNode,
+		URL:      &url,
+	}
+}
+
 func (n LinkNode) ToNode() Node {
 	return Node{
 		BaseNode: n.BaseNode,
@@ -103,6 +124,24 @@ func (n LinkNode) Validate() error {
 		return fmt.Errorf("link type node requires url attribute")
 	}
 	return nil
+}
+
+// --------------------------------- GROUP NODE --------------------------------
+type GroupNode struct {
+	BaseNode
+	Label           *string
+	Background      *string
+	BackgroundStyle *string // one of "cover", "ratio", "repeat"
+}
+
+func NewGroupNode(label string, background, backgroundStyle *string, baseOpts ...BaseNodeOpt) GroupNode {
+	baseNode := newBaseNode("text", baseOpts...)
+	return GroupNode{
+		BaseNode:        baseNode,
+		Label:           &label,
+		Background:      background,
+		BackgroundStyle: backgroundStyle,
+	}
 }
 
 func (n GroupNode) ToNode() Node {
@@ -124,6 +163,8 @@ func (n GroupNode) Validate() error {
 	return nil
 }
 
+// -----------------------------------------------------------------------------
+
 func (n *Node) ToTypedNode() (TypedNode, error) {
 	switch n.Type {
 	case "text":
@@ -144,41 +185,52 @@ func (n *Node) ToTypedNode() (TypedNode, error) {
 }
 
 // TODO: Change to Typed Nodes
-func NewNode() *Node {
-	n := Node{
-		BaseNode: BaseNode{
-			ID:     util.NewID(),
-			X:      0,
-			Y:      0,
-			Width:  DefaultWidth,
-			Height: DefaultHeight,
-		},
+type BaseNodeOpt func(*BaseNode)
+
+func Position(x, y int) BaseNodeOpt {
+	return func(node *BaseNode) {
+		node.X = x
+		node.Y = y
 	}
-	return &n
 }
 
-func (n *Node) SetPosition(x, y int) *Node {
-	n.X = x
-	n.Y = y
-	return n
+func TranslateX(x int) BaseNodeOpt {
+	return func(node *BaseNode) {
+		node.X = x
+	}
 }
 
-func (n *Node) TranslateX(x int) *Node {
-	n.X += x
-	return n
+func TranslateY(y int) BaseNodeOpt {
+	return func(node *BaseNode) {
+		node.Y = y
+	}
 }
 
-func (n *Node) TranslateY(y int) *Node {
-	n.Y += y
-	return n
+func Width(width int) BaseNodeOpt {
+	return func(node *BaseNode) {
+		node.Width = width
+	}
 }
 
-func (n *Node) SetWidth(width int) *Node {
-	n.Width = width
-	return n
+func Height(height int) BaseNodeOpt {
+	return func(node *BaseNode) {
+		node.Height = height
+	}
 }
 
-func (n *Node) SetHeight(height int) *Node {
-	n.Height = height
-	return n
+func newBaseNode(t string, opts ...BaseNodeOpt) BaseNode {
+	node := BaseNode{
+		ID:     util.NewID(),
+		Type:   t,
+		X:      0,
+		Y:      0,
+		Width:  DefaultWidth,
+		Height: DefaultHeight,
+	}
+
+	for _, opt := range opts {
+		opt(&node)
+	}
+
+	return node
 }

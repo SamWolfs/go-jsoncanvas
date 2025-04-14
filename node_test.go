@@ -11,20 +11,20 @@ import (
 func TestToTypedNodeSuccess(t *testing.T) {
 	inputs := map[string]Node{
 		"text": {
-			BaseNode: baseNode("text"),
+			BaseNode: testBaseNode("text"),
 			Text:     util.StrPtr("text"),
 		},
 		"file": {
-			BaseNode: baseNode("file"),
+			BaseNode: testBaseNode("file"),
 			File:     util.StrPtr("fileName"),
 			Subpath:  util.StrPtr("fileSubpath"),
 		},
 		"link": {
-			BaseNode: baseNode("link"),
+			BaseNode: testBaseNode("link"),
 			URL:      util.StrPtr("URL"),
 		},
 		"group": {
-			BaseNode:        baseNode("group"),
+			BaseNode:        testBaseNode("group"),
 			Label:           util.StrPtr("label"),
 			Background:      util.StrPtr("1"),
 			BackgroundStyle: util.StrPtr("cover"),
@@ -33,20 +33,20 @@ func TestToTypedNodeSuccess(t *testing.T) {
 
 	expected := map[string]TypedNode{
 		"text": TextNode{
-			BaseNode: baseNode("text"),
+			BaseNode: testBaseNode("text"),
 			Text:     util.StrPtr("text"),
 		},
 		"file": FileNode{
-			BaseNode: baseNode("file"),
+			BaseNode: testBaseNode("file"),
 			File:     util.StrPtr("fileName"),
 			Subpath:  util.StrPtr("fileSubpath"),
 		},
 		"link": LinkNode{
-			BaseNode: baseNode("link"),
+			BaseNode: testBaseNode("link"),
 			URL:      util.StrPtr("URL"),
 		},
 		"group": GroupNode{
-			BaseNode:        baseNode("group"),
+			BaseNode:        testBaseNode("group"),
 			Label:           util.StrPtr("label"),
 			Background:      util.StrPtr("1"),
 			BackgroundStyle: util.StrPtr("cover"),
@@ -64,23 +64,23 @@ func TestToTypedNodeSuccess(t *testing.T) {
 func TestToTypedNodeFailure(t *testing.T) {
 	inputs := map[string]Node{
 		"text": {
-			BaseNode: baseNode("text"),
+			BaseNode: testBaseNode("text"),
 			Text:     nil,
 		},
 		"file": {
-			BaseNode: baseNode("file"),
+			BaseNode: testBaseNode("file"),
 			File:     nil,
 		},
 		"link": {
-			BaseNode: baseNode("link"),
+			BaseNode: testBaseNode("link"),
 			URL:      nil,
 		},
 		"group": {
-			BaseNode:        baseNode("group"),
-			Label:           nil,
+			BaseNode: testBaseNode("group"),
+			Label:    nil,
 		},
 		"groupBg": {
-			BaseNode:        baseNode("group"),
+			BaseNode:        testBaseNode("group"),
 			Label:           util.StrPtr("label"),
 			Background:      util.StrPtr("1"),
 			BackgroundStyle: util.StrPtr("error"),
@@ -88,10 +88,10 @@ func TestToTypedNodeFailure(t *testing.T) {
 	}
 
 	expectedError := map[string]string{
-		"text": "text type node requires text attribute",
-		"file": "file type node requires file attribute",
-		"link": "link type node requires url attribute",
-		"group": "group type node requires label attribute",
+		"text":    "text type node requires text attribute",
+		"file":    "file type node requires file attribute",
+		"link":    "link type node requires url attribute",
+		"group":   "group type node requires label attribute",
 		"groupBg": "invalid background style",
 	}
 
@@ -105,20 +105,20 @@ func TestToTypedNodeFailure(t *testing.T) {
 func TestToNode(t *testing.T) {
 	inputs := map[string]TypedNode{
 		"text": TextNode{
-			BaseNode: baseNode("text"),
+			BaseNode: testBaseNode("text"),
 			Text:     util.StrPtr("text"),
 		},
 		"file": FileNode{
-			BaseNode: baseNode("file"),
+			BaseNode: testBaseNode("file"),
 			File:     util.StrPtr("fileName"),
 			Subpath:  util.StrPtr("fileSubpath"),
 		},
 		"link": LinkNode{
-			BaseNode: baseNode("link"),
+			BaseNode: testBaseNode("link"),
 			URL:      util.StrPtr("URL"),
 		},
 		"group": GroupNode{
-			BaseNode:        baseNode("group"),
+			BaseNode:        testBaseNode("group"),
 			Label:           util.StrPtr("label"),
 			Background:      util.StrPtr("1"),
 			BackgroundStyle: util.StrPtr("cover"),
@@ -127,26 +127,25 @@ func TestToNode(t *testing.T) {
 
 	expected := map[string]Node{
 		"text": {
-			BaseNode: baseNode("text"),
+			BaseNode: testBaseNode("text"),
 			Text:     util.StrPtr("text"),
 		},
 		"file": {
-			BaseNode: baseNode("file"),
+			BaseNode: testBaseNode("file"),
 			File:     util.StrPtr("fileName"),
 			Subpath:  util.StrPtr("fileSubpath"),
 		},
 		"link": {
-			BaseNode: baseNode("link"),
+			BaseNode: testBaseNode("link"),
 			URL:      util.StrPtr("URL"),
 		},
 		"group": {
-			BaseNode:        baseNode("group"),
+			BaseNode:        testBaseNode("group"),
 			Label:           util.StrPtr("label"),
 			Background:      util.StrPtr("1"),
 			BackgroundStyle: util.StrPtr("cover"),
 		},
 	}
-
 
 	for nodeType, node := range inputs {
 		actual := node.ToNode()
@@ -155,7 +154,29 @@ func TestToNode(t *testing.T) {
 	}
 }
 
-func baseNode(t string) BaseNode {
+func TestConstructors(t *testing.T) {
+	inputs := map[string]TypedNode{
+		"text":  NewTextNode("text"),
+		"file":  NewFileNode("file", nil),
+		"link":  NewLinkNode("link"),
+		"group": NewGroupNode("group", nil, nil),
+	}
+
+	for _, node := range inputs {
+		require.NoError(t, node.Validate())
+	}
+}
+
+func TestBaseNodeOpts(t *testing.T) {
+	node := newBaseNode("text", Position(100, 200), Width(10), Height(20))
+
+	assert.Equal(t, node.X, 100)
+	assert.Equal(t, node.Y, 200)
+	assert.Equal(t, node.Width, 10)
+	assert.Equal(t, node.Height, 20)
+}
+
+func testBaseNode(t string) BaseNode {
 	return BaseNode{
 		ID:     t,
 		Type:   t,
